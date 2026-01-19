@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "powerwave"
 version = "0.1.0"
@@ -9,3 +13,23 @@ dependencies = [
   "pandas>=2.2.0",
   "matplotlib>=3.8.0",
 ]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["powerwave*"]
+exclude = ["plots*", "examples*"]
+namespaces = false
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "Q"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+

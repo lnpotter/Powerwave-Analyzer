@@ -1,42 +1,55 @@
+from __future__ import annotations
+
+import io
+from typing import IO, Union
+
+import numpy as np
 import pandas as pd
 
+
+FileInput = Union[str, io.IOBase, IO[str], IO[bytes]]
+
+
 def load_waveform_csv(
-    filepath: str,
+    filepath: FileInput,
     time_column: str = "time",
     signal_column: str = "voltage",
-) -> tuple[pd.Series, pd.Series]:
+) -> tuple[np.ndarray, np.ndarray]:
     """
-    Load time-domain waveform from a CSV file.
+    Load a time-domain waveform from a CSV file (or file-like object).
 
-    Parameters
-    ----------
-    filepath : str
-        Path to the CSV file.
-    time_column : str
-        Column name for time values (seconds).
-    signal_column : str
-        Column name for the waveform (voltage/current).
+    The function reads only `time_column` and `signal_column`, converts both to
+    float64, and returns NumPy arrays.
 
-    Returns
-    -------
-    time : pd.Series
-        Time vector in seconds.
-    signal : pd.Series
-        Waveform values (floats).
+    Args:
+        filepath: Path-like or a file-like object (e.g., BytesIO/StringIO).
+        time_column: Column name for time values (seconds).
+        signal_column: Column name for the waveform (voltage/current).
 
-    Raises
-    ------
-    ValueError
-        If required columns are missing.
+    Returns:
+        (time, signal) as NumPy float64 arrays.
+
+    Raises:
+        ValueError: If columns are missing or values cannot be parsed as numbers.
     """
-    df = pd.read_csv(filepath)
+    try:
+        df = pd.read_csv(filepath, usecols=[time_column, signal_column])
+    except ValueError as exc:
+        msg = str(exc)
+        if "Usecols do not match columns" in msg:
+            cols = list(pd.read_csv(filepath, nrows=0).columns)
+            raise ValueError(
+                f"CSV is missing required columns. "
+                f"Required: '{time_column}', '{signal_column}'. Found: {cols}"
+            ) from exc
+        raise
 
-    if time_column not in df.columns:
-        raise ValueError(f"Time column '{time_column}' not found in CSV.")
-    if signal_column not in df.columns:
-        raise ValueError(f"Signal column '{signal_column}' not found in CSV.")
+    time = pd.to_numeric(df[time_column], errors="coerce").to_numpy(dtype=np.float64, copy=False)
+    signal = pd.to_numeric(df[signal_column], errors="coerce").to_numpy(dtype=np.float64, copy=False)
 
-    time = df[time_column].astype(float)
-    signal = df[signal_column].astype(float)
+    bad = ~(np.isfinite(time) & np.isfinite(signal))
+    if bad.any():
+        bad_count = int(bad.sum())
+        raise ValueError(f"Non-numeric or invalid values found in CSV ({bad_count} rows).")
 
     return time, signal
