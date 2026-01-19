@@ -9,10 +9,21 @@ PowerWave Analyzer is a Python tool for offline analysis of electrical waveforms
 - Detect fundamental frequency and harmonic components.
 - Compute RMS and THD for the waveform.
 
-## Installation
+## Installation & Usage
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+git clone https://github.com/lnpotter/Powerwave-Analyzer.git
+cd Powerwave-Analyzer
+
+python -m venv venv
+# Linux/Mac: source venv/bin/activate
+# Windows: venv\Scripts\activate
 pip install -r requirements.txt
+pip install -e .
+
+# Usage (example CLI/terminal):
+python cli.py --file sine.csv --column voltage --sampling-rate 1000 --fundamental 60 --lang en
+
+# Usage (example Streamlit):
+streamlit run app.py
 ```
