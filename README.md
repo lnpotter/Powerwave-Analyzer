@@ -27,3 +27,8 @@ python cli.py --file sine.csv --column voltage --sampling-rate 1000 --fundamenta
 # Usage (example Streamlit):
 streamlit run app.py
 ```
+
+## Demos
+![Numerical metrics](examples/imgs/numerical_metrics.png)
+
+![Plots](examples/imgs/plots.png)
